@@ -1,0 +1,16 @@
+.:53 {
+    health {
+        lameduck 5s
+    }
+
+    etcd {
+        path /coredns
+        endpoint http://localhost:2379
+        fallthrough
+    }
+    forward . /etc/resolv.conf
+    cache 1800
+    reload 
+    log
+    errors
+}
