@@ -42,6 +42,8 @@ func TestARecord(t *testing.T) {
 
 	_, err = cli.Put(ctx, key, val)
 	assert.Nil(t, err)
+
+	// nolint
 	defer cli.Delete(ctx, key)
 
 	r := &net.Resolver{
