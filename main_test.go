@@ -9,12 +9,32 @@ import (
 	"testing"
 	"time"
 
+	_ "github.com/coredns/coredns/core/plugin"
+	"github.com/coredns/coredns/coremain"
 	"github.com/moby/moby/pkg/namesgenerator"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/server/v3/embed"
 )
 
-func TestARecord(t *testing.T) {
+type EmbednsTestSuite struct {
+	suite.Suite
+}
+
+func (suite *EmbednsTestSuite) SetupTest() {
+	go func() {
+		cfg := embed.NewConfig()
+		cfg.LogLevel = "debug"
+		cfg.LogOutputs = []string{"./etcd.log"}
+		cfg.Dir = "default.etcd"
+		_, err := embed.StartEtcd(cfg)
+
+		suite.Nil(err)
+		coremain.Run()
+	}()
+}
+
+func (suite *EmbednsTestSuite) TestARecord() {
 	ctx := context.Background()
 	etcdAddresses := "localhost:2379"
 
@@ -25,12 +45,12 @@ func TestARecord(t *testing.T) {
 			Context:     ctx,
 		},
 	)
-	assert.Nil(t, err)
+	suite.Nil(err)
 
 	defer cli.Close()
 
 	hostname := namesgenerator.GetRandomName(12)
-	t.Logf("hostname is: %s", hostname)
+	suite.T().Logf("hostname is: %s", hostname)
 	key := fmt.Sprintf("/coredns/%s/x1", hostname)
 	hostip := fmt.Sprintf("10.233.%d.%d", rand.Intn(128), rand.Intn(100))
 
@@ -41,7 +61,7 @@ func TestARecord(t *testing.T) {
 	}()
 
 	_, err = cli.Put(ctx, key, val)
-	assert.Nil(t, err)
+	suite.Nil(err)
 
 	// nolint
 	defer cli.Delete(ctx, key)
@@ -57,6 +77,13 @@ func TestARecord(t *testing.T) {
 	}
 
 	ip, err := r.LookupHost(context.Background(), hostname)
-	assert.Nil(t, err)
-	assert.Equal(t, ip[0], hostip)
+	suite.Nil(err)
+	suite.Equal(ip[0], hostip)
+}
+
+func (suite *EmbednsTestSuite) TearDownSuite() {
+}
+
+func TestExampleTestSuite(t *testing.T) {
+	suite.Run(t, new(EmbednsTestSuite))
 }
