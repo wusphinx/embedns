@@ -1,16 +1,26 @@
+# 监听53端口,接受所有的DNS查询请求
 .:53 {
+    # lameduck 5s表示当 CoreDNS 即将关闭或重启时,会保持 5 秒钟的时间继续服务请求
     health {
         lameduck 5s
     }
 
+    # 从 etcd 获取配置,path 指定 etcd 中的 key 的路径
     etcd {
         path /coredns
+        # endpoint 指定本地 embed etcd 的地址
         endpoint http://localhost:2379
+        # fallthrough 表示如果 etcd 中没有找到记录则继续传递查询
         fallthrough
     }
+    # 将查询转发到本地的 DNS 服务器 /etc/resolv.conf
     forward . /etc/resolv.conf
+    # 启用缓存,缓存 1800 秒
     cache 1800
+    # 允许自动 reload 配置
     reload 
+    # 启用日志
     log
+    # 日志只记录错误信息
     errors
 }

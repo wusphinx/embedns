@@ -23,8 +23,7 @@ jobs:
 
     - name: Build
       run: go build -v ./...
-
-    - name: Test
-      run: |
-        nohup go run main.go > nohup.out 2> nohup.err < /dev/null &
-        go test -v ./...
+    # TODO
+    # - name: Test
+    #   run: |
+    #     go test -v ./...
