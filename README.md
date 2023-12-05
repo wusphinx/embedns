@@ -6,6 +6,10 @@
 ```
 go run main.go
 ```
+or 
+```
+cd example && docker-compose up 
+```
 
 2. 写入A记录
 ```

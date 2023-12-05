@@ -1,0 +1,11 @@
+version: '3.7'
+services:
+  embedns:
+    build:
+      context: ../
+    volumes:
+      - ../Corefile:/opt/Corefile:ro
+    ports:
+      - 53:53/udp
+      - 2379:2379
+      - 2380:2380
